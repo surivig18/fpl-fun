@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "FPL Companion"
+description = "A live Fantasy Premier League companion that tracks gameweek points, monitors player price-rise momentum, and suggests transfer options for a manager's squad."
+version = "1.0.0"
+id = "artifacts/fpl-companion"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21939
+
+[services.development]
+run = "pnpm --filter @workspace/fpl-companion run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/fpl-companion", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/fpl-companion/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21939"
+BASE_PATH = "/"

@@ -1,0 +1,1 @@
+- [FPL feed quirks](fpl-feed-quirks.md) — current picks responses may omit purchase and selling price fields; always use safe market-price fallbacks.

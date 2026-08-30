@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: fpl
+    description: Fantasy Premier League data operations
 paths:
   /healthz:
     get:
@@ -24,7 +26,93 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /fpl/overview:
+    get:
+      operationId: getFplOverview
+      tags: [fpl]
+      summary: Get the current FPL gameweek overview
+      description: Returns current gameweek state and a curated player market feed from the official FPL data.
+      responses:
+        "200":
+          description: Current FPL overview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FplOverview"
+        "502":
+          description: FPL data source unavailable
+  /fpl/teams/{teamId}:
+    get:
+      operationId: getFplTeam
+      tags: [fpl]
+      summary: Get an FPL team summary
+      description: Returns manager and season totals for an FPL team ID.
+      parameters:
+        - $ref: "#/components/parameters/TeamId"
+      responses:
+        "200":
+          description: Team summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FplTeam"
+        "400":
+          description: Invalid team ID
+        "404":
+          description: Team not found
+        "502":
+          description: FPL data source unavailable
+  /fpl/teams/{teamId}/picks:
+    get:
+      operationId: getFplTeamPicks
+      tags: [fpl]
+      summary: Get the current picks for an FPL team
+      description: Returns the team's picks for the current or requested gameweek.
+      parameters:
+        - $ref: "#/components/parameters/TeamId"
+      responses:
+        "200":
+          description: Team picks
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FplTeamPicks"
+        "400":
+          description: Invalid team ID or gameweek
+        "404":
+          description: Team or gameweek not found
+        "502":
+          description: FPL data source unavailable
+  /fpl/teams/{teamId}/recommendations:
+    get:
+      operationId: getFplRecommendations
+      tags: [fpl]
+      summary: Get transfer and price-momentum recommendations
+      description: Compares the team's current squad with the current player market and returns explainable transfer candidates and modeled price-rise signals.
+      parameters:
+        - $ref: "#/components/parameters/TeamId"
+      responses:
+        "200":
+          description: Recommendations
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FplRecommendations"
+        "400":
+          description: Invalid team ID
+        "404":
+          description: Team not found
+        "502":
+          description: FPL data source unavailable
 components:
+  parameters:
+    TeamId:
+      name: teamId
+      in: path
+      required: true
+      schema:
+        type: number
+        minimum: 1
   schemas:
     HealthStatus:
       type: object
@@ -33,4 +121,127 @@ components:
           type: string
       required:
         - status
+    FplGameweek:
+      type: object
+      required: [id, name, deadlineTime, finished, isCurrent, isNext]
+      properties:
+        id: { type: number }
+        name: { type: string }
+        deadlineTime: { type: string }
+        finished: { type: boolean }
+        isCurrent: { type: boolean }
+        isNext: { type: boolean }
+        averageScore: { type: number }
+        highestScore: { type: number }
+    FplPlayer:
+      type: object
+      required: [id, firstName, secondName, webName, position, team, teamName, price, totalPoints, eventPoints, form, selectedByPercent, transfersInEvent, transfersOutEvent, status, news, photo]
+      properties:
+        id: { type: number }
+        firstName: { type: string }
+        secondName: { type: string }
+        webName: { type: string }
+        position: { type: string }
+        team: { type: number }
+        teamName: { type: string }
+        price: { type: number }
+        totalPoints: { type: number }
+        eventPoints: { type: number }
+        form: { type: number }
+        selectedByPercent: { type: number }
+        transfersInEvent: { type: number }
+        transfersOutEvent: { type: number }
+        pointsPerGame: { type: number }
+        minutes: { type: number }
+        status: { type: string }
+        news: { type: string }
+        photo: { type: string }
+        priceRiseChance: { type: number }
+        priceRiseLabel: { type: string }
+        momentum: { type: string }
+    FplOverview:
+      type: object
+      required: [currentGameweek, nextGameweek, players, updatedAt]
+      properties:
+        currentGameweek:
+          $ref: "#/components/schemas/FplGameweek"
+        nextGameweek:
+          $ref: "#/components/schemas/FplGameweek"
+        players:
+          type: array
+          items:
+            $ref: "#/components/schemas/FplPlayer"
+        updatedAt: { type: string }
+    FplTeam:
+      type: object
+      required: [id, name, managerName, overallRank, totalPoints, gameweekPoints, gameweekRank, bank, teamValue, transfersMade, lastDeadline]
+      properties:
+        id: { type: number }
+        name: { type: string }
+        managerName: { type: string }
+        overallRank: { type: number }
+        totalPoints: { type: number }
+        gameweekPoints: { type: number }
+        gameweekRank: { type: number }
+        bank: { type: number }
+        teamValue: { type: number }
+        transfersMade: { type: number }
+        lastDeadline: { type: string }
+    FplPick:
+      type: object
+      required: [playerId, webName, position, teamName, price, points, multiplier, isCaptain, isViceCaptain, purchasePrice, sellingPrice, fixture]
+      properties:
+        playerId: { type: number }
+        webName: { type: string }
+        position: { type: string }
+        teamName: { type: string }
+        price: { type: number }
+        points: { type: number }
+        multiplier: { type: number }
+        isCaptain: { type: boolean }
+        isViceCaptain: { type: boolean }
+        purchasePrice: { type: number }
+        sellingPrice: { type: number }
+        fixture: { type: string }
+    FplTeamPicks:
+      type: object
+      required: [teamId, event, points, picks, updatedAt]
+      properties:
+        teamId: { type: number }
+        event: { type: number }
+        points: { type: number }
+        picks:
+          type: array
+          items:
+            $ref: "#/components/schemas/FplPick"
+        updatedAt: { type: string }
+    FplRecommendation:
+      type: object
+      required: [playerId, webName, position, teamName, price, score, reason, priceRiseChance, fixture]
+      properties:
+        playerId: { type: number }
+        webName: { type: string }
+        position: { type: string }
+        teamName: { type: string }
+        price: { type: number }
+        score: { type: number }
+        reason: { type: string }
+        priceRiseChance: { type: number }
+        fixture: { type: string }
+        replaces: { type: string }
+    FplRecommendations:
+      type: object
+      required: [teamId, freeTransfers, recommendations, watchlist, updatedAt]
+      properties:
+        teamId: { type: number }
+        freeTransfers: { type: number }
+        recommendations:
+          type: array
+          items:
+            $ref: "#/components/schemas/FplRecommendation"
+        watchlist:
+          type: array
+          items:
+            $ref: "#/components/schemas/FplPlayer"
+        updatedAt: { type: string }
 

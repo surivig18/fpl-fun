@@ -1,6 +1,6 @@
-# [Project name]
+# FPL Companion
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+FPL Companion is a live Fantasy Premier League dashboard for gameweek points, price-rise momentum, and explainable transfer ideas.
 
 ## Run & Operate
 
@@ -22,23 +22,30 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/fpl-companion` — responsive React dashboard and visual theme.
+- `artifacts/api-server/src/lib/fpl.ts` — official FPL API adapter and recommendation scoring.
+- `artifacts/api-server/src/routes/fpl.ts` — FPL route handlers.
+- `lib/api-spec/openapi.yaml` — source-of-truth API contract; regenerate client packages after edits.
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The dashboard uses the official FPL feed server-side so the browser never depends on third-party CORS behavior.
+- Team IDs are stored in the browser's local storage; no user account or manager credentials are required for the first version.
+- Price-rise signals are explicitly modeled estimates using public transfer momentum, form, ownership, and availability rather than presented as official FPL predictions.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+- Shows the current and next gameweek deadlines.
+- Shows live squad points and captaincy context for an entered FPL team ID.
+- Surfaces market movers, price-rise watch items, and explainable transfer candidates.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+No saved preferences yet.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- The current FPL picks payload can omit purchase and selling prices, so the API adapter falls back to the player's current market price.
 
 ## Pointers
 
