@@ -27,6 +27,13 @@ if (!basePath) {
   );
 }
 
+// In local dev, the frontend calls relative `/api/...` paths but runs on its
+// own Vite dev server, separate from the API server. Proxy those requests to
+// the API server so both can be run side-by-side without extra client wiring.
+// Not needed in production, where a router combines both services under one
+// origin (see artifacts/*/.replit-artifact/artifact.toml).
+const apiProxyTarget = process.env.API_PROXY_TARGET ?? 'http://localhost:5000';
+
 export default defineConfig({
   base: basePath,
   plugins: [
@@ -71,6 +78,12 @@ export default defineConfig({
     allowedHosts: true,
     fs: {
       strict: true,
+    },
+    proxy: {
+      '/api': {
+        target: apiProxyTarget,
+        changeOrigin: true,
+      },
     },
   },
   preview: {

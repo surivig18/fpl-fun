@@ -4,12 +4,20 @@ FPL Companion is a live Fantasy Premier League dashboard for gameweek points, pr
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/api-server run dev` — run the API server (needs `PORT`, e.g. `PORT=5000`)
+- `pnpm --filter @workspace/fpl-companion run dev` — run the dashboard (needs `PORT` and `BASE_PATH`, e.g. `PORT=5173 BASE_PATH=/`)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
 - `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
 - `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- Required env: `DATABASE_URL` — Postgres connection string (only needed for `lib/db` scripts; the API server itself doesn't touch the DB yet)
+
+### Running locally (outside Replit)
+
+- Node 20.19+/22.12+ is required (Vite's minimum); `.nvmrc` pins `22.22.0` — run `nvm use`.
+- Replit injects `PORT`/`BASE_PATH`/`DATABASE_URL` automatically; locally you must export them yourself (no `.env` loading in code, only a plain `PORT=5000` value in `artifacts/api-server/.env` for reference).
+- The dashboard calls relative `/api/...` paths with no `setBaseUrl` call, so its own Vite dev server needs to proxy `/api` to the API server. `artifacts/fpl-companion/vite.config.ts` proxies `/api` to `API_PROXY_TARGET` (default `http://localhost:5000`) in dev — set `API_PROXY_TARGET` if the API server runs on a different port/host.
+- macOS note: port 5000 is often held by the AirPlay Receiver (ControlCenter); either disable it in System Settings → General → AirDrop & Handoff, or run the API server on another port and set `API_PROXY_TARGET` to match.
 
 ## Stack
 
