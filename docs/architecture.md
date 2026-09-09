@@ -4,7 +4,7 @@ A live Fantasy Premier League dashboard. The React SPA renders gameweek state,
 market movers, live squad points, and explainable transfer ideas. An Express
 API server fetches the official FPL feed server-side (so the browser never
 depends on third-party CORS), reshapes it into typed DTOs, and computes
-price-rise and recommendation scores.
+price-rise, expected-performance, fixture-run, and recommendation scores.
 
 ## System architecture
 
@@ -64,7 +64,10 @@ graph TB
 - **lib/fpl.ts** — the only place that talks to the official FPL API. Fetches
   `bootstrap-static`, `entry/{id}`, `entry/{id}/event/{gw}/picks`, and
   `fixtures`, maps raw payloads to DTOs, and computes `priceRiseChance`,
-  `momentum`, and transfer `recommendations`/`watchlist`.
+  expected-goal involvement per 90, availability, five-fixture difficulty,
+  momentum, and transfer `recommendations`/`watchlist`. This is the baseline
+  analytics provider; a separately licensed provider can be added behind this
+  boundary for event-level or odds data.
 - **api-spec / Orval** — `openapi.yaml` is the contract; codegen produces both the
   client hooks and the Zod schemas, keeping client and server types in sync.
 

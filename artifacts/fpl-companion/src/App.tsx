@@ -221,6 +221,11 @@ function WatchItem({ player }: { player: FplPlayer }) {
           <p className="truncate text-[11px] text-[hsl(var(--muted-foreground))]">{player.teamName} · {formatMoney(player.price)}</p>
           <p className="shrink-0 text-[10px] text-[hsl(var(--muted-foreground))]">{player.priceRiseLabel || player.momentum || 'Market watch'}</p>
         </div>
+        <div className="mt-2 flex flex-wrap gap-1.5 font-mono-custom text-[9px] text-[hsl(var(--muted-foreground))]">
+          <span className="rounded bg-[hsl(var(--muted))] px-1.5 py-0.5">xGI/90 {player.expectedGoalInvolvementsPer90.toFixed(2)}</span>
+          <span className="rounded bg-[hsl(var(--muted))] px-1.5 py-0.5">Run {player.fixtureRunDifficulty.toFixed(1)}/5</span>
+          <span className="rounded bg-[hsl(var(--muted))] px-1.5 py-0.5">{player.chanceOfPlayingNextRound}% available</span>
+        </div>
         <div className="mt-2 h-1 overflow-hidden rounded-full bg-[hsl(var(--muted))]">
           <div className={`h-full rounded-full ${positive ? 'bg-[hsl(var(--accent))]' : 'bg-[hsl(var(--primary))]'}`} style={{ width: `${Math.min(100, Math.max(5, chance))}%` }} />
         </div>

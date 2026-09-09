@@ -135,7 +135,7 @@ components:
         highestScore: { type: number }
     FplPlayer:
       type: object
-      required: [id, firstName, secondName, webName, position, team, teamName, price, totalPoints, eventPoints, form, selectedByPercent, transfersInEvent, transfersOutEvent, status, news, photo]
+      required: [id, firstName, secondName, webName, position, team, teamName, price, totalPoints, eventPoints, form, selectedByPercent, transfersInEvent, transfersOutEvent, pointsPerGame, minutes, expectedGoals, expectedAssists, expectedGoalInvolvements, expectedGoalsPer90, expectedAssistsPer90, expectedGoalInvolvementsPer90, influence, creativity, threat, ictIndex, chanceOfPlayingNextRound, nextFixtureDifficulty, fixtureRunDifficulty, status, news, photo]
       properties:
         id: { type: number }
         firstName: { type: string }
@@ -153,6 +153,19 @@ components:
         transfersOutEvent: { type: number }
         pointsPerGame: { type: number }
         minutes: { type: number }
+        expectedGoals: { type: number }
+        expectedAssists: { type: number }
+        expectedGoalInvolvements: { type: number }
+        expectedGoalsPer90: { type: number }
+        expectedAssistsPer90: { type: number }
+        expectedGoalInvolvementsPer90: { type: number }
+        influence: { type: number }
+        creativity: { type: number }
+        threat: { type: number }
+        ictIndex: { type: number }
+        chanceOfPlayingNextRound: { type: number }
+        nextFixtureDifficulty: { type: number, minimum: 1, maximum: 5 }
+        fixtureRunDifficulty: { type: number, minimum: 1, maximum: 5 }
         status: { type: string }
         news: { type: string }
         photo: { type: string }
@@ -244,4 +257,3 @@ components:
           items:
             $ref: "#/components/schemas/FplPlayer"
         updatedAt: { type: string }
-

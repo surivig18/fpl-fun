@@ -35,8 +35,29 @@ export interface FplPlayer {
   selectedByPercent: number;
   transfersInEvent: number;
   transfersOutEvent: number;
-  pointsPerGame?: number;
-  minutes?: number;
+  pointsPerGame: number;
+  minutes: number;
+  expectedGoals: number;
+  expectedAssists: number;
+  expectedGoalInvolvements: number;
+  expectedGoalsPer90: number;
+  expectedAssistsPer90: number;
+  expectedGoalInvolvementsPer90: number;
+  influence: number;
+  creativity: number;
+  threat: number;
+  ictIndex: number;
+  chanceOfPlayingNextRound: number;
+  /**
+     * @minimum 1
+     * @maximum 5
+     */
+  nextFixtureDifficulty: number;
+  /**
+     * @minimum 1
+     * @maximum 5
+     */
+  fixtureRunDifficulty: number;
   status: string;
   news: string;
   photo: string;

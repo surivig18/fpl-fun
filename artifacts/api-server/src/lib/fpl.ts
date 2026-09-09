@@ -39,6 +39,17 @@ type FplBootstrap = {
     transfers_out_event: number;
     points_per_game: string;
     minutes: number;
+    expected_goals: string;
+    expected_assists: string;
+    expected_goal_involvements: string;
+    expected_goals_per_90: number;
+    expected_assists_per_90: number;
+    expected_goal_involvements_per_90: number;
+    influence: string;
+    creativity: string;
+    threat: string;
+    ict_index: string;
+    chance_of_playing_next_round: number | null;
     status: string;
     news: string;
     photo: string;
@@ -88,6 +99,8 @@ type FplFixture = {
   team_a_score: number | null;
   finished: boolean;
   event: number | null;
+  team_h_difficulty: number;
+  team_a_difficulty: number;
 };
 
 export class FplDataError extends Error {
@@ -156,6 +169,9 @@ function playerDto(
   const form = Number(player.form) || 0;
   const ownership = Number(player.selected_by_percent) || 0;
   const pointsPerGame = Number(player.points_per_game) || 0;
+  const expectedGoals = Number(player.expected_goals) || 0;
+  const expectedAssists = Number(player.expected_assists) || 0;
+  const expectedGoalInvolvements = Number(player.expected_goal_involvements) || 0;
   const availabilityPenalty = player.status === "a" ? 0 : 25;
   const rawChance =
     50 +
@@ -183,6 +199,20 @@ function playerDto(
     transfersOutEvent: player.transfers_out_event,
     pointsPerGame,
     minutes: player.minutes,
+    expectedGoals,
+    expectedAssists,
+    expectedGoalInvolvements,
+    expectedGoalsPer90: Number(player.expected_goals_per_90) || 0,
+    expectedAssistsPer90: Number(player.expected_assists_per_90) || 0,
+    expectedGoalInvolvementsPer90:
+      Number(player.expected_goal_involvements_per_90) || 0,
+    influence: Number(player.influence) || 0,
+    creativity: Number(player.creativity) || 0,
+    threat: Number(player.threat) || 0,
+    ictIndex: Number(player.ict_index) || 0,
+    chanceOfPlayingNextRound: player.chance_of_playing_next_round ?? 100,
+    nextFixtureDifficulty: 3,
+    fixtureRunDifficulty: 3,
     status: player.status,
     news: player.news,
     photo: player.photo,
@@ -201,6 +231,44 @@ function playerDto(
           : netTransfers < -5_000
             ? "Cooling"
             : "Steady",
+  };
+}
+
+function fixtureAnalytics(
+  teamId: number,
+  fromEvent: number,
+  fixtures: FplFixture[],
+) {
+  const upcoming = fixtures
+    .filter(
+      (fixture) =>
+        fixture.event !== null &&
+        fixture.event >= fromEvent &&
+        (fixture.team_h === teamId || fixture.team_a === teamId),
+    )
+    .sort((a, b) => (a.event ?? 0) - (b.event ?? 0))
+    .slice(0, 5);
+  const difficulties = upcoming.map((fixture) =>
+    fixture.team_h === teamId ? fixture.team_h_difficulty : fixture.team_a_difficulty,
+  );
+  const fixtureRunDifficulty = difficulties.length
+    ? Number((difficulties.reduce((sum, value) => sum + value, 0) / difficulties.length).toFixed(1))
+    : 3;
+
+  return {
+    nextFixtureDifficulty: difficulties[0] ?? 3,
+    fixtureRunDifficulty,
+  };
+}
+
+function withFixtureAnalytics(
+  player: FplPlayer,
+  fromEvent: number,
+  fixtures: FplFixture[],
+) {
+  return {
+    ...player,
+    ...fixtureAnalytics(player.team, fromEvent, fixtures),
   };
 }
 
@@ -228,10 +296,13 @@ async function getBootstrap() {
 }
 
 export async function getOverview(): Promise<FplOverview> {
-  const bootstrap = await getBootstrap();
+  const [bootstrap, fixtures] = await Promise.all([
+    getBootstrap(),
+    fplFetch<FplFixture[]>("/fixtures/"),
+  ]);
   const { current, next } = currentGameweek(bootstrap);
   const players = bootstrap.elements
-    .map((player) => playerDto(player, bootstrap))
+    .map((player) => withFixtureAnalytics(playerDto(player, bootstrap), next.id, fixtures))
     .sort(
       (a, b) =>
         (b.priceRiseChance ?? 0) - (a.priceRiseChance ?? 0),
@@ -281,7 +352,7 @@ async function getPicksPayload(teamId: number) {
 
 export async function getTeamPicks(teamId: number): Promise<FplTeamPicks> {
   const { bootstrap, picks, event } = await getPicksPayload(teamId);
-  const fixtures = await fplFetch<FplFixture[]>(`/fixtures/?event=${event.id}`);
+  const fixtures = await fplFetch<FplFixture[]>("/fixtures/");
   const players = new Map(
     bootstrap.elements.map((player) => [
       player.id,
@@ -338,8 +409,10 @@ export async function getRecommendations(
     getPicksPayload(teamId),
     getTeamPicks(teamId),
   ]);
-  const fixtures = await fplFetch<FplFixture[]>(`/fixtures/?event=${event.id}`);
-  const players = bootstrap.elements.map((player) => playerDto(player, bootstrap));
+  const fixtures = await fplFetch<FplFixture[]>("/fixtures/");
+  const players = bootstrap.elements.map((player) =>
+    withFixtureAnalytics(playerDto(player, bootstrap), event.id, fixtures),
+  );
   const currentIds = new Set(picks.picks.map((pick) => pick.element));
   const currentPicks = teamPicks.picks;
   const freeTransfers = 1;
@@ -360,11 +433,15 @@ export async function getRecommendations(
         const netTransfers =
           player.transfersInEvent - player.transfersOutEvent;
         const score =
-          player.form * 6 +
-          (player.pointsPerGame ?? 0) * 3 +
+          player.form * 3 +
+          (player.pointsPerGame ?? 0) * 2 +
+          player.expectedGoalInvolvementsPer90 * 24 +
+          player.ictIndex * 0.04 +
           player.eventPoints * 1.5 +
-          (player.priceRiseChance ?? 0) * 0.22 +
-          Math.min(12, Math.max(-8, netTransfers / 2000));
+          (player.priceRiseChance ?? 0) * 0.12 +
+          Math.min(8, Math.max(-5, netTransfers / 2500)) +
+          (6 - player.fixtureRunDifficulty) * 3 +
+          (player.chanceOfPlayingNextRound >= 75 ? 2 : -10);
         const fixture = fixtureText(
           player.team,
           event.id,
@@ -379,9 +456,8 @@ export async function getRecommendations(
           price: player.price,
           score: Number(score.toFixed(1)),
           reason:
-            (player.priceRiseChance ?? 0) >= 75
-              ? `Strong momentum with a ${fixture} next`
-              : `Form ${player.form.toFixed(1)} and ${fixture} next`,
+            `xGI/90 ${player.expectedGoalInvolvementsPer90.toFixed(2)} · ` +
+            `fixture run ${player.fixtureRunDifficulty.toFixed(1)}/5 · ${fixture} next`,
           priceRiseChance: player.priceRiseChance ?? 0,
           fixture,
           replaces: pick.webName,

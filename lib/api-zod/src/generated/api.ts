@@ -21,6 +21,12 @@ export const HealthCheckResponse = zod.object({
  * Returns current gameweek state and a curated player market feed from the official FPL data.
  * @summary Get the current FPL gameweek overview
  */
+export const getFplOverviewResponsePlayersItemNextFixtureDifficultyMax = 5;
+
+export const getFplOverviewResponsePlayersItemFixtureRunDifficultyMax = 5;
+
+
+
 export const GetFplOverviewResponse = zod.object({
   "currentGameweek": zod.object({
   "id": zod.number(),
@@ -57,8 +63,21 @@ export const GetFplOverviewResponse = zod.object({
   "selectedByPercent": zod.number(),
   "transfersInEvent": zod.number(),
   "transfersOutEvent": zod.number(),
-  "pointsPerGame": zod.number().optional(),
-  "minutes": zod.number().optional(),
+  "pointsPerGame": zod.number(),
+  "minutes": zod.number(),
+  "expectedGoals": zod.number(),
+  "expectedAssists": zod.number(),
+  "expectedGoalInvolvements": zod.number(),
+  "expectedGoalsPer90": zod.number(),
+  "expectedAssistsPer90": zod.number(),
+  "expectedGoalInvolvementsPer90": zod.number(),
+  "influence": zod.number(),
+  "creativity": zod.number(),
+  "threat": zod.number(),
+  "ictIndex": zod.number(),
+  "chanceOfPlayingNextRound": zod.number(),
+  "nextFixtureDifficulty": zod.number().min(1).max(getFplOverviewResponsePlayersItemNextFixtureDifficultyMax),
+  "fixtureRunDifficulty": zod.number().min(1).max(getFplOverviewResponsePlayersItemFixtureRunDifficultyMax),
   "status": zod.string(),
   "news": zod.string(),
   "photo": zod.string(),
@@ -140,6 +159,12 @@ export const GetFplRecommendationsParams = zod.object({
   "teamId": zod.coerce.number().min(1)
 })
 
+export const getFplRecommendationsResponseWatchlistItemNextFixtureDifficultyMax = 5;
+
+export const getFplRecommendationsResponseWatchlistItemFixtureRunDifficultyMax = 5;
+
+
+
 export const GetFplRecommendationsResponse = zod.object({
   "teamId": zod.number(),
   "freeTransfers": zod.number(),
@@ -170,8 +195,21 @@ export const GetFplRecommendationsResponse = zod.object({
   "selectedByPercent": zod.number(),
   "transfersInEvent": zod.number(),
   "transfersOutEvent": zod.number(),
-  "pointsPerGame": zod.number().optional(),
-  "minutes": zod.number().optional(),
+  "pointsPerGame": zod.number(),
+  "minutes": zod.number(),
+  "expectedGoals": zod.number(),
+  "expectedAssists": zod.number(),
+  "expectedGoalInvolvements": zod.number(),
+  "expectedGoalsPer90": zod.number(),
+  "expectedAssistsPer90": zod.number(),
+  "expectedGoalInvolvementsPer90": zod.number(),
+  "influence": zod.number(),
+  "creativity": zod.number(),
+  "threat": zod.number(),
+  "ictIndex": zod.number(),
+  "chanceOfPlayingNextRound": zod.number(),
+  "nextFixtureDifficulty": zod.number().min(1).max(getFplRecommendationsResponseWatchlistItemNextFixtureDifficultyMax),
+  "fixtureRunDifficulty": zod.number().min(1).max(getFplRecommendationsResponseWatchlistItemFixtureRunDifficultyMax),
   "status": zod.string(),
   "news": zod.string(),
   "photo": zod.string(),
