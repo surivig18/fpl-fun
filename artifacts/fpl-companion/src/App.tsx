@@ -273,8 +273,8 @@ function TeamSetup({ currentId, onSave, onClose }: { currentId: number | null; o
   };
   return (
     <div className="relative overflow-hidden rounded-2xl border border-[hsl(var(--border))] bg-[hsl(var(--card))] p-6 shadow-[0_16px_50px_hsl(var(--primary)/.06)]">
-      {onClose && <button type="button" aria-label="Close team editor" data-testid="button-close-team-editor" onClick={onClose} className="absolute right-4 top-4 rounded-full p-1.5 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]"><X size={16} /></button>}
-      <div className="absolute -right-12 -top-16 size-44 rounded-full border-[24px] border-[hsl(var(--secondary))]" />
+      <div className="pointer-events-none absolute -right-12 -top-16 size-44 rounded-full border-[24px] border-[hsl(var(--secondary))]" />
+      {onClose && <button type="button" aria-label="Close team editor" data-testid="button-close-team-editor" onClick={onClose} className="absolute right-4 top-4 z-10 rounded-full p-1.5 text-[hsl(var(--muted-foreground))] hover:bg-[hsl(var(--muted))]"><X size={16} /></button>}
       <div className="relative max-w-xl">
         <div className="mb-4 flex size-11 items-center justify-center rounded-2xl bg-[hsl(var(--primary))] text-[hsl(var(--primary-foreground))]"><Command size={20} /></div>
         <p className="font-mono-custom text-[10px] uppercase tracking-[.18em] text-[hsl(var(--primary))]">Personalise your board</p>
